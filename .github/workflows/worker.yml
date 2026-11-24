@@ -1,0 +1,25 @@
+name: Perchance Dataset Worker
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 */6 * * *'
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install Camoufox
+        run: |
+          pip install camoufox[geoip] playwright huggingface_hub
+          python -m camoufox fetch
+      - name: Run 5h40m Shift
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_REPO_ID: ${{ secrets.HF_REPO_ID }}
+          PERCHANCE_URL: ${{ secrets.PERCHANCE_URL }}
+        run: xvfb-run --auto-servernum python worker.py
